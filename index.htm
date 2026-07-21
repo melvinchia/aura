@@ -51,6 +51,7 @@
             background: #bbb;
             color: #555;
             cursor: not-allowed;
+            opacity: 0.8;
         }
         #start-btn {
             background: #5cb85c;
@@ -121,6 +122,7 @@
                 <button id="start-btn" onclick="startScreening()" disabled>Start Screening</button>
             </div>
 
+            <!-- Rest of the quiz and results sections remain the same -->
             <div id="quiz-screen" class="hidden">
                 <div id="progress-container"><div id="progress"></div></div>
                 <p id="greeting" style="font-size:1.2em;"></p>
@@ -168,6 +170,8 @@
 
         nameInput.addEventListener("input", updateStartButton);
         ageSelect.addEventListener("change", updateStartButton);
+
+        // ... (rest of the script is unchanged)
 
         let allQuestions = [];
         let currentQuestions = [];
@@ -316,6 +320,11 @@
         }
 
         document.addEventListener("keydown", handleKey);
+
+        // Ensure button state is correct on load
+        window.addEventListener('load', () => {
+            updateStartButton();
+        });
     </script>
 </body>
 </html>
