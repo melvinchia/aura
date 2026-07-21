@@ -60,6 +60,27 @@
             transform: scale(1.03);
         }
 
+        /* Improved dropdown styling */
+        select {
+            padding: 16px 20px;
+            font-size: 1.3em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            min-width: 240px;
+            display: block;
+            margin: 10px auto;
+            cursor: pointer;
+            height: 58px; /* Matches button height */
+            line-height: 1.3;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #4a86e8;
+            box-shadow: 0 0 0 3px rgba(74, 134, 232, 0.2);
+        }
+
         .options {
             display: flex;
             justify-content: center;
@@ -106,7 +127,7 @@
 
             <div id="start-screen">
                 <label>What's your name? 
-                    <input id="name" type="text" placeholder="e.g., Alex">
+                    <input id="name" type="text" placeholder="e.g., Alex" style="width:100%; padding:16px; font-size:1.2em; border-radius:8px; border:2px solid #ddd;">
                 </label><br><br>
                 
                 <label>
