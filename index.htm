@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALICE - Friendly Neuro Screening</title>
+    <title>AURA - Age-aware Understanding & Resourceful Assessment</title>
     
     <!-- Configurable Settings -->
     <script>
@@ -66,8 +66,11 @@
     </style>
 </head>
 <body>
-    <h1>Hi! I'm ALICE 🌟</h1>
-    <p>I'm here to help with a gentle, private screening for ADHD or Autism traits. This is <strong>not a diagnosis</strong> — just helpful info.</p>
+    <h1>Welcome to AURA 🌟</h1>
+    <p><strong>AURA</strong> — <em>Age-aware Understanding & Resourceful Assessment</em></p>
+    <p>A gentle, private, and respectful tool to help you explore possible ADHD or Autism traits across different age groups.</p>
+    <p><strong>This is not a diagnosis.</strong> It is simply an initial, supportive screening to help you better understand yourself or your child. 
+    Professional evaluation by a qualified clinician is always recommended.</p>
 
     <div id="start-screen">
         <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex"></label><br><br>
@@ -194,7 +197,6 @@
             questionIndex++;
 
             if (score === 1) { 
-                // Attempt replacement only if unique questions remain
                 const poolType = answers[answers.length-1].type;
                 const usedTexts = new Set(currentQuestions.concat(answers.map(a => a.q)));
                 
@@ -206,9 +208,8 @@
                 if (pool.length > 0) {
                     const replacement = pool[Math.floor(Math.random() * pool.length)];
                     currentQuestions[questionIndex - 1] = replacement;
-                    questionIndex--;   // Re-ask the slot with new question
+                    questionIndex--;
                 }
-                // If no replacement available, just continue (quiz will end when questions run out)
             }
             showQuestion();
         }
@@ -230,7 +231,6 @@
             document.getElementById("adhd-score").innerText = adhdScore;
             document.getElementById("autism-score").innerText = autismScore;
 
-            // Warning only (quiz no longer ends early)
             const warningEl = document.getElementById("warning-text");
             if (sometimesCount >= MAX_SOMETIMES) {
                 warningEl.innerHTML = `⚠️ Too many "Sometimes" answers (${sometimesCount} / ${MAX_SOMETIMES}). Results may be less accurate.`;
