@@ -22,7 +22,6 @@
             background: linear-gradient(135deg, #e6f0f7, #d8e4f0);
         }
 
-        /* Age group backgrounds */
         body.age-7-12  { background: linear-gradient(135deg, #a8e6cf, #d4f4dd); }
         body.age-13-20 { background: linear-gradient(135deg, #b4d8f0, #e0f0ff); }
         body.age-21-40 { background: linear-gradient(135deg, #d8b4f0, #f0d4ff); }
@@ -51,16 +50,23 @@
         .modal-content {
             padding: 35px 25px;
             text-align: center;
-            max-height: 95vh;
-            overflow-y: auto;
         }
 
         h1 { font-size: 2.1rem; color: #2c5aa0; margin-bottom: 10px; }
-        label { display: block; margin: 12px 0 6px; font-weight: 600; color: #444; }
+        
+        label {
+            display: block;
+            margin: 8px 0 6px;
+            font-weight: 600;
+            color: #444;
+            font-size: 1.25rem; /* Slightly larger for name label */
+        }
+
         input[type="text"], select {
             width: 100%; max-width: 420px; padding: 15px 18px; font-size: 1.2rem;
-            border: 2px solid #ddd; border-radius: 10px; margin: 8px auto 18px;
+            border: 2px solid #ddd; border-radius: 10px; margin: 8px auto 16px;
         }
+
         input:focus, select:focus { border-color: #4a86e8; box-shadow: 0 0 0 4px rgba(74,134,232,0.15); outline: none; }
 
         button { 
@@ -72,7 +78,6 @@
         #start-btn { background: #4caf50; color: white; }
         #start-btn:hover:not(:disabled) { background: #43a047; transform: scale(1.03); }
 
-        /* Answer buttons */
         .options {
             display: flex;
             justify-content: center;
@@ -86,7 +91,6 @@
             min-width: 130px;
             border-radius: 12px;
             font-weight: 600;
-            transition: all 0.2s ease;
         }
         #no-btn    { background: #e74c3c; color: white; }
         #sometimes-btn { background: #f39c12; color: white; }
@@ -112,18 +116,6 @@
             text-align: left;
             line-height: 1.5;
         }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .modal-content { padding: 25px 20px; }
-            h1 { font-size: 1.75rem; }
-        }
-
-        @media (orientation: landscape) and (max-height: 550px) {
-            .modal-content { padding: 20px 18px; max-height: 98vh; }
-            h1 { font-size: 1.65rem; }
-            input, select, button, .options button { font-size: 1.05rem; padding: 13px 24px; }
-        }
     </style>
 </head>
 <body>
@@ -140,8 +132,7 @@
                 <label>What's your name?</label>
                 <input id="name" type="text" placeholder="e.g., Alex">
 
-                <label style="margin-top: 25px;">Select your age group</label>
-                <select id="ageGroup">
+                <select id="ageGroup" style="margin-top: 12px;">
                     <option value="" disabled selected>Select your age group</option>
                     <option value="7-12">7-12 years</option>
                     <option value="13-20">13-20 years</option>
