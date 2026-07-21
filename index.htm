@@ -60,7 +60,7 @@
 </head>
 <body>
     <h1>Hi! I'm ALICE 🌟</h1>
-    <p>I'm here to help with a gentle, private screening for ADHD or Autism traits. This is **not a diagnosis**—just helpful info.</p>
+    <p>I'm here to help with a gentle, private screening for ADHD or Autism traits. This is <strong>not a diagnosis</strong> — just helpful info to discuss with a professional if needed.</p>
 
     <div id="start-screen">
         <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex"></label><br><br>
@@ -146,7 +146,7 @@
             const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
 
             if (adhdPool.length < 15 || autismPool.length < 15) {
-                alert("Not enough questions for this age group. Please update questions.json.");
+                alert("Not enough questions for this age group. Please update questions.json with all 400 questions.");
                 return;
             }
 
@@ -181,7 +181,7 @@
 
             questionIndex++;
 
-            if (score === 1) {
+            if (score === 1) { // Sometimes → replace
                 const poolType = answers[answers.length-1].type;
                 const pool = allQuestions
                     .filter(q => q.ageGroup === ageGroupVal && q.condition === poolType)
@@ -220,6 +220,7 @@
             location.reload();
         }
 
+        // Keyboard Support
         function handleKey(e) {
             if (document.getElementById("quiz-screen").classList.contains("hidden")) return;
 
