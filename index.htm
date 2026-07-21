@@ -116,12 +116,11 @@
             line-height: 1.5;
         }
 
-        /* Mobile Landscape - Hide intro text only on quiz/results screens */
+        /* Mobile Landscape */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 16px 18px; }
             h1 { font-size: 1.65rem; }
-            #quiz-screen .intro-text,
-            #results-screen .intro-text { display: none; }
+            .intro-text { display: none; }
             label { margin: 8px 0 4px; font-size: 1.1rem; }
             input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
         }
@@ -202,6 +201,11 @@
         let questionIndex = 0;
         let sometimesCount = 0;
 
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) &&
+                   window.innerWidth <= 900;
+        }
+
         function updateStartButton() {
             startBtn.disabled = !(nameInput.value.trim().length > 0 && ageSelect.value !== "");
         }
@@ -231,6 +235,8 @@
         }
 
         document.addEventListener("keydown", (e) => {
+            if (isMobile()) return; // Disable keyboard shortcuts on mobile
+
             if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
                 switch (e.key.toLowerCase()) {
                     case "arrowleft": case "n": answer(0); break;
