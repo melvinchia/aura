@@ -19,9 +19,10 @@
             transition: background 0.8s ease;
             overflow: hidden;
             position: relative;
+            background: linear-gradient(135deg, #e6f0f7, #d8e4f0); /* Neutral default */
         }
 
-        /* Dynamic backgrounds */
+        /* Age group backgrounds */
         body.age-7-12  { background: linear-gradient(135deg, #a8e6cf, #d4f4dd); }
         body.age-13-20 { background: linear-gradient(135deg, #b4d8f0, #e0f0ff); }
         body.age-21-40 { background: linear-gradient(135deg, #d8b4f0, #f0d4ff); }
@@ -234,12 +235,8 @@
         }
 
         function updateBackground() {
-            body.className = '';
             const age = ageSelect.value;
-            if (age === "7-12") body.classList.add("age-7-12");
-            else if (age === "13-20") body.classList.add("age-13-20");
-            else if (age === "21-40") body.classList.add("age-21-40");
-            else if (age === "41+") body.classList.add("age-41");
+            body.className = age ? `age-${age.replace('+', '')}` : '';
         }
 
         nameInput.addEventListener("input", updateStartButton);
@@ -272,13 +269,11 @@
                 allQuestions = data.questions || [];
             } catch (e) {
                 console.error("Failed to load questions.json", e);
-                alert("Could not load questions.json.");
             }
         }
 
         async function startScreening() {
             if (startBtn.disabled) return;
-
             const selectedGroup = ageSelect.value;
             await loadQuestions();
 
@@ -324,7 +319,6 @@
         function answer(score) {
             const currentQ = currentQuestions[questionIndex];
             const isAdhd = allQuestions.some(q => q.text === currentQ && q.condition === "adhd");
-            
             answers.push({ q: currentQ, score: score, type: isAdhd ? 'adhd' : 'autism' });
 
             if (score === 1) sometimesCount++;
@@ -334,7 +328,6 @@
             if (score === 1) { 
                 const poolType = answers[answers.length-1].type;
                 const usedTexts = new Set(currentQuestions.concat(answers.map(a => a.q)));
-                
                 const pool = allQuestions
                     .filter(q => q.ageGroup === ageGroupVal && q.condition === poolType)
                     .map(q => q.text)
@@ -381,26 +374,13 @@
         function handleKey(e) {
             if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
                 switch (e.key.toLowerCase()) {
-                    case "arrowleft":
-                    case "n":
-                        answer(0);
-                        break;
-                    case "arrowright":
-                    case "y":
-                        answer(2);
-                        break;
-                    case "arrowup":
-                    case "arrowdown":
-                    case "s":
-                    case " ":
-                        e.preventDefault();
-                        answer(1);
-                        break;
+                    case "arrowleft": case "n": answer(0); break;
+                    case "arrowright": case "y": answer(2); break;
+                    case "arrowup": case "arrowdown": case "s": case " ": 
+                        e.preventDefault(); answer(1); break;
                 }
             } else if (!document.getElementById("start-screen").classList.contains("hidden")) {
-                if (e.key === "Enter" && !startBtn.disabled) {
-                    startScreening();
-                }
+                if (e.key === "Enter" && !startBtn.disabled) startScreening();
             }
         }
 
