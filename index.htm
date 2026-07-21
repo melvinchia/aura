@@ -119,12 +119,15 @@
             line-height: 1.5;
         }
 
+        /* Mobile Landscape */
         @media (orientation: landscape) and (max-height: 580px) {
-            .modal-content { padding: 14px 16px; }
-            h1 { font-size: 1.6rem; margin-bottom: 6px; }
-            .intro-text { display: none; }
-            label { margin: 6px 0 4px; font-size: 1.05rem; }
-            input[type="text"], select { padding: 10px 12px; font-size: 1.0rem; margin: 4px auto 8px; }
+            .modal-content { padding: 16px 18px; }
+            h1 { font-size: 1.65rem; }
+            /* Show intro text only on start screen */
+            #quiz-screen .intro-text,
+            #results-screen .intro-text { display: none; }
+            label { margin: 8px 0 4px; font-size: 1.1rem; }
+            input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
             button { padding: 13px 26px; font-size: 1.1rem; margin: 14px auto; }
             .options { margin: 22px 0; gap: 10px; }
         }
