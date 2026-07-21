@@ -65,7 +65,7 @@
 
         input[type="text"], select {
             width: 100%; max-width: 420px; padding: 13px 16px; font-size: 1.15rem;
-            border: 2px solid #ddd; border-radius: 10px; margin: 6px auto 14px;
+            border: 2px solid #ddd; border-radius: 10px; margin: 6px auto 12px;
         }
 
         button { 
@@ -116,15 +116,12 @@
             line-height: 1.5;
         }
 
-        /* Mobile Landscape Optimization */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 16px 18px; }
-            h1 { font-size: 1.65rem; margin-bottom: 6px; }
+            h1 { font-size: 1.65rem; }
             .intro-text { display: none; }
-            label { font-size: 1.1rem; margin: 8px 0 4px; }
+            label { margin: 8px 0 4px; font-size: 1.1rem; }
             input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
-            button { padding: 14px 28px; font-size: 1.15rem; margin: 16px auto; }
-            .options { margin: 25px 0; gap: 12px; }
         }
     </style>
 </head>
@@ -200,13 +197,16 @@
         let sometimesCount = 0;
 
         function updateStartButton() {
-            startBtn.disabled = !(nameInput.value.trim().length > 0 && ageSelect.value !== "");
+            const nameFilled = nameInput.value.trim().length > 0;
+            const ageSelected = ageSelect.value !== "";
+            startBtn.disabled = !(nameFilled && ageSelected);
         }
 
         function updateBackground() {
             body.className = ageSelect.value ? `age-${ageSelect.value.replace('+', '')}` : '';
         }
 
+        // Ensure updates fire correctly
         nameInput.addEventListener("input", updateStartButton);
         ageSelect.addEventListener("change", () => {
             updateStartButton();
