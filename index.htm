@@ -8,6 +8,10 @@
     <script>const MAX_SOMETIMES = 10;</script>
 
     <style>
+        :root {
+            --fs-base: 1.1rem;
+        }
+
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
             margin: 0;
@@ -65,20 +69,22 @@
             text-align: center;
         }
 
-        h1, h2 { color: #2c5aa0; }
+        h1 { font-size: 2.2rem; color: #2c5aa0; margin-bottom: 8px; }
+        p { font-size: 1.05rem; line-height: 1.5; }
 
         label {
             display: block;
-            margin: 8px 0 6px;
+            margin: 12px 0 6px;
             font-weight: 600;
             color: #444;
+            font-size: 1.1rem;
         }
 
         input[type="text"], select {
             width: 100%;
             max-width: 420px;
             padding: 16px 20px;
-            font-size: 1.25em;
+            font-size: 1.25rem;
             border: 2px solid #ddd;
             border-radius: 10px;
             background: white;
@@ -93,27 +99,11 @@
             box-shadow: 0 0 0 4px rgba(74, 134, 232, 0.15);
         }
 
-        /* Answer buttons - made more compact */
-        .options {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 35px 0;
-        }
-        .options button {
-            padding: 16px 28px;
-            font-size: 1.15em;
-            min-width: 110px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
+        /* Start Button */
         button { 
             padding: 18px 32px; 
             margin: 25px auto;
-            font-size: 1.35em; 
+            font-size: 1.35rem; 
             border: none; 
             border-radius: 12px; 
             cursor: pointer; 
@@ -136,9 +126,21 @@
             transform: scale(1.04);
         }
 
-        #no-btn    { background: #d9534f; color: white; }
-        #sometimes-btn { background: #f0ad4e; color: white; }
-        #yes-btn   { background: #5cb85c; color: white; }
+        /* Answer buttons */
+        .options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 35px 0;
+        }
+        .options button {
+            padding: 16px 24px;
+            font-size: 1.1rem;
+            min-width: 110px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
 
         #progress-container {
             height: 12px;
@@ -153,15 +155,41 @@
             width: 0%; 
             transition: width 0.3s ease;
         }
+
         .hidden { display: none; }
         .legend {
             margin-top: 30px;
             padding: 15px;
             background: #e8f0ff;
             border-radius: 8px;
-            font-size: 0.95em;
+            font-size: 0.95rem;
+            text-align: left;
         }
         .warning { color: #d9534f; font-weight: bold; }
+
+        /* Responsive Adjustments */
+        @media (max-width: 600px) { /* Mobile Portrait */
+            .modal-content { padding: 30px 20px; }
+            h1 { font-size: 1.8rem; }
+            p, label { font-size: 1rem; }
+            input, select, button, .options button {
+                font-size: 1.1rem;
+                padding: 14px 18px;
+            }
+            .options button { min-width: 100px; }
+            #start-btn { min-width: 100%; }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) { /* Tablets / Small Desktop */
+            h1 { font-size: 2rem; }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) { /* Mobile Landscape */
+            .modal-content { padding: 25px 25px; }
+            h1 { font-size: 1.7rem; }
+            .options { gap: 10px; margin: 25px 0; }
+            .options button { padding: 14px 20px; font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -169,7 +197,7 @@
 
     <div class="modal" id="main-modal">
         <div class="modal-content">
-
+            <!-- Content same as before -->
             <h1>Welcome to AURA 🌟</h1>
             <p><strong>AURA</strong> — <em>Age-aware Understanding & Resourceful Assessment</em></p>
             <p>A gentle, private, and respectful tool to help you explore possible ADHD or Autism traits across different age groups.</p>
@@ -179,7 +207,7 @@
                 <label>What's your name?</label>
                 <input id="name" type="text" placeholder="e.g., Alex">
 
-                <label style="margin-top: 30px;">Select your age group</label>
+                <label style="margin-top: 25px;">Select your age group</label>
                 <select id="ageGroup">
                     <option value="" disabled selected>Select your age group</option>
                     <option value="7-12">7-12 years</option>
@@ -204,12 +232,7 @@
 
                 <div class="legend">
                     <strong>Keyboard Shortcuts:</strong><br>
-                    ← Left Arrow = No &nbsp;&nbsp; 
-                    → Right Arrow = Yes &nbsp;&nbsp; 
-                    ↑ / ↓ Arrow = Sometimes &nbsp;&nbsp;<br>
-                    Y = Yes &nbsp;&nbsp; 
-                    N = No &nbsp;&nbsp; 
-                    S or Spacebar = Sometimes
+                    ← No &nbsp;&nbsp; → Yes &nbsp;&nbsp; ↑/↓ or S = Sometimes
                 </div>
             </div>
 
@@ -221,13 +244,11 @@
                 <p><em>Higher scores suggest exploring this further with a healthcare professional.</em></p>
                 <button onclick="restart()">Start Over</button>
             </div>
-
         </div>
     </div>
 
     <script>
-        // (Same full script as the previous complete version - I'm keeping it short here for space)
-        // Copy the entire <script> block from my previous complete response
+        // Full script (same as previous working version)
         const nameInput = document.getElementById("name");
         const ageSelect = document.getElementById("ageGroup");
         const startBtn = document.getElementById("start-btn");
@@ -271,7 +292,7 @@
             }
         }
 
-        // ... (rest of your functions: loadQuestions, startScreening, shuffle, etc.)
+        // ... (include the rest of the script: loadQuestions, startScreening, shuffle, answer, etc. from previous complete version)
 
         window.addEventListener('load', () => {
             updateStartButton();
