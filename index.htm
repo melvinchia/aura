@@ -116,12 +116,18 @@
             line-height: 1.5;
         }
 
+        /* Mobile Landscape */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 16px 18px; }
             h1 { font-size: 1.65rem; }
             .intro-text { display: none; }
             label { margin: 8px 0 4px; font-size: 1.1rem; }
             input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
+        }
+
+        /* Hide legend on mobile portrait */
+        @media (max-width: 600px) and (orientation: portrait) {
+            .legend { display: none; }
         }
     </style>
 </head>
@@ -197,16 +203,13 @@
         let sometimesCount = 0;
 
         function updateStartButton() {
-            const nameFilled = nameInput.value.trim().length > 0;
-            const ageSelected = ageSelect.value !== "";
-            startBtn.disabled = !(nameFilled && ageSelected);
+            startBtn.disabled = !(nameInput.value.trim().length > 0 && ageSelect.value !== "");
         }
 
         function updateBackground() {
             body.className = ageSelect.value ? `age-${ageSelect.value.replace('+', '')}` : '';
         }
 
-        // Ensure updates fire correctly
         nameInput.addEventListener("input", updateStartButton);
         ageSelect.addEventListener("change", () => {
             updateStartButton();
