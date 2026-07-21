@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA - Age-aware Understanding & Resourceful Assessment</title>
     
-    <script>
-        const MAX_SOMETIMES = 10;
-    </script>
+    <script>const MAX_SOMETIMES = 10;</script>
 
     <style>
         body { 
@@ -48,8 +46,8 @@
             transition: all 0.3s;
         }
         button:disabled {
-            background: #bbb;
-            color: #555;
+            background: #bbb !important;
+            color: #555 !important;
             cursor: not-allowed;
             opacity: 0.8;
         }
@@ -107,9 +105,11 @@
             <p><strong>This is not a diagnosis.</strong> Professional evaluation is recommended.</p>
 
             <div id="start-screen">
-                <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex"></label><br><br>
+                <label>What's your name? 
+                    <input id="name" type="text" placeholder="e.g., Alex">
+                </label><br><br>
                 
-                <label>Select your age group:
+                <label>
                     <select id="ageGroup">
                         <option value="" disabled selected>Select your age group</option>
                         <option value="7-12">7-12 years</option>
@@ -122,7 +122,6 @@
                 <button id="start-btn" onclick="startScreening()" disabled>Start Screening</button>
             </div>
 
-            <!-- Rest of the quiz and results sections remain the same -->
             <div id="quiz-screen" class="hidden">
                 <div id="progress-container"><div id="progress"></div></div>
                 <p id="greeting" style="font-size:1.2em;"></p>
@@ -170,8 +169,6 @@
 
         nameInput.addEventListener("input", updateStartButton);
         ageSelect.addEventListener("change", updateStartButton);
-
-        // ... (rest of the script is unchanged)
 
         let allQuestions = [];
         let currentQuestions = [];
@@ -321,7 +318,6 @@
 
         document.addEventListener("keydown", handleKey);
 
-        // Ensure button state is correct on load
         window.addEventListener('load', () => {
             updateStartButton();
         });
