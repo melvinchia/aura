@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALICE - Friendly Neuro Screening</title>
+    
+    <!-- Configurable Settings -->
+    <script>
+        const MAX_SOMETIMES = 10;   // ← Change this to adjust the warning threshold
+    </script>
+
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -56,11 +62,12 @@
             border-radius: 8px;
             font-size: 0.95em;
         }
+        .warning { color: #d9534f; font-weight: bold; }
     </style>
 </head>
 <body>
     <h1>Hi! I'm ALICE 🌟</h1>
-    <p>I'm here to help with a gentle, private screening for ADHD or Autism traits. This is <strong>not a diagnosis</strong> — just helpful info to discuss with a professional if needed.</p>
+    <p>I'm here to help with a gentle, private screening for ADHD or Autism traits. This is <strong>not a diagnosis</strong> — just helpful info.</p>
 
     <div id="start-screen">
         <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex"></label><br><br>
@@ -104,6 +111,7 @@
         <h2>Thank you, <span id="result-name"></span>!</h2>
         <p>Your ADHD Trait Score: <strong id="adhd-score"></strong>/10</p>
         <p>Your Autism Trait Score: <strong id="autism-score"></strong>/10</p>
+        <p id="warning-text" class="warning"></p>
         <p><em>Higher scores suggest exploring this further with a healthcare professional.</em></p>
         <button onclick="restart()">Start Over</button>
     </div>
@@ -114,6 +122,7 @@
         let answers = [];
         let nameVal = "", ageGroupVal = "";
         let questionIndex = 0;
+        let sometimesCount = 0;
 
         async function loadQuestions() {
             try {
@@ -122,14 +131,14 @@
                 allQuestions = data.questions || [];
             } catch (e) {
                 console.error("Failed to load questions.json", e);
-                alert("Could not load questions.json. Make sure the file is in the same folder.");
+                alert("Could not load questions.json.");
             }
         }
 
         async function startScreening() {
             const selectedGroup = document.getElementById("ageGroup").value;
             if (!selectedGroup) {
-                alert("Please select your age group to continue.");
+                alert("Please select your age group.");
                 return;
             }
 
@@ -137,6 +146,7 @@
 
             nameVal = document.getElementById("name").value.trim() || "Friend";
             ageGroupVal = selectedGroup;
+            sometimesCount = 0;
 
             document.getElementById("start-screen").classList.add("hidden");
             document.getElementById("quiz-screen").classList.remove("hidden");
@@ -146,7 +156,7 @@
             const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
 
             if (adhdPool.length < 15 || autismPool.length < 15) {
-                alert("Not enough questions for this age group. Please update questions.json with all 400 questions.");
+                alert("Not enough questions for this age group.");
                 return;
             }
 
@@ -169,7 +179,7 @@
                 return;
             }
             document.getElementById("question-text").innerText = currentQuestions[questionIndex];
-            const progress = Math.round(((questionIndex) / currentQuestions.length) * 100);
+            const progress = Math.round(((questionIndex) / Math.max(currentQuestions.length, 1)) * 100);
             document.getElementById("progress").style.width = `${progress}%`;
         }
 
@@ -179,21 +189,26 @@
             
             answers.push({ q: currentQ, score: score, type: isAdhd ? 'adhd' : 'autism' });
 
+            if (score === 1) sometimesCount++;
+
             questionIndex++;
 
-            if (score === 1) { // Sometimes → replace
+            if (score === 1) { 
+                // Attempt replacement only if unique questions remain
                 const poolType = answers[answers.length-1].type;
+                const usedTexts = new Set(currentQuestions.concat(answers.map(a => a.q)));
+                
                 const pool = allQuestions
                     .filter(q => q.ageGroup === ageGroupVal && q.condition === poolType)
-                    .map(q => q.text);
-                
-                let replacement;
-                do {
-                    replacement = pool[Math.floor(Math.random() * pool.length)];
-                } while (currentQuestions.includes(replacement) || answers.some(a => a.q === replacement));
+                    .map(q => q.text)
+                    .filter(text => !usedTexts.has(text));
 
-                currentQuestions[questionIndex - 1] = replacement;
-                questionIndex--;
+                if (pool.length > 0) {
+                    const replacement = pool[Math.floor(Math.random() * pool.length)];
+                    currentQuestions[questionIndex - 1] = replacement;
+                    questionIndex--;   // Re-ask the slot with new question
+                }
+                // If no replacement available, just continue (quiz will end when questions run out)
             }
             showQuestion();
         }
@@ -214,13 +229,20 @@
             document.getElementById("result-name").innerText = nameVal;
             document.getElementById("adhd-score").innerText = adhdScore;
             document.getElementById("autism-score").innerText = autismScore;
+
+            // Warning only (quiz no longer ends early)
+            const warningEl = document.getElementById("warning-text");
+            if (sometimesCount >= MAX_SOMETIMES) {
+                warningEl.innerHTML = `⚠️ Too many "Sometimes" answers (${sometimesCount} / ${MAX_SOMETIMES}). Results may be less accurate.`;
+            } else {
+                warningEl.innerHTML = "";
+            }
         }
 
         function restart() {
             location.reload();
         }
 
-        // Keyboard Support
         function handleKey(e) {
             if (document.getElementById("quiz-screen").classList.contains("hidden")) return;
 
