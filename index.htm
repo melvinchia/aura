@@ -31,23 +31,26 @@
         }
 
         .modal-content {
-            padding: 30px;
+            padding: 40px 30px;
+            text-align: center;
         }
 
         h1, h2 { color: #4a86e8; }
         
         button { 
-            padding: 18px 32px; 
-            margin: 8px; 
+            padding: 18px 40px; 
+            margin: 20px auto;
             font-size: 1.3em; 
             border: none; 
             border-radius: 8px; 
             cursor: pointer; 
-            min-width: 200px;
+            display: block;
+            min-width: 260px;
             transition: all 0.2s;
         }
         button:disabled {
-            background: #bbb;
+            background: #bbbbbb;
+            color: #666;
             cursor: not-allowed;
         }
         #start-btn {
@@ -56,7 +59,7 @@
         }
         #start-btn:hover:not(:disabled) {
             background: #4cae4c;
-            transform: scale(1.03);
+            transform: scale(1.05);
         }
 
         .options {
@@ -92,14 +95,11 @@
             font-size: 0.95em;
         }
         .warning { color: #d9534f; font-weight: bold; }
-
-        /* Fallback styles if modal fails */
-        .fallback .modal { box-shadow: none; max-width: none; }
     </style>
 </head>
 <body>
     <div class="modal" id="main-modal">
-        <div class="modal-content" id="modal-content">
+        <div class="modal-content">
 
             <h1>Welcome to AURA 🌟</h1>
             <p><strong>AURA</strong> — <em>Age-aware Understanding & Resourceful Assessment</em></p>
@@ -107,10 +107,10 @@
             <p><strong>This is not a diagnosis.</strong> Professional evaluation is recommended.</p>
 
             <div id="start-screen">
-                <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex"></label><br><br>
+                <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex" style="width:280px; padding:8px; font-size:1.1em;"></label><br><br>
                 
-                <label>Select your age group:
-                    <select id="ageGroup">
+                <label>Select your age group:<br>
+                    <select id="ageGroup" style="padding:8px; font-size:1.1em; width:280px;">
                         <option value="" disabled selected>Select your age group</option>
                         <option value="7-12">7-12 years</option>
                         <option value="13-20">13-20 years</option>
@@ -157,14 +157,13 @@
     </div>
 
     <script>
-        // Fallback detection
-        function applyFallback() {
-            document.body.classList.add('fallback');
-            document.getElementById('main-modal').style.boxShadow = 'none';
-            document.getElementById('main-modal').style.maxWidth = '100%';
-        }
+        let allQuestions = [];
+        let currentQuestions = [];
+        let answers = [];
+        let nameVal = "", ageGroupVal = "";
+        let questionIndex = 0;
+        let sometimesCount = 0;
 
-        // Button enable logic
         const nameInput = document.getElementById("name");
         const ageSelect = document.getElementById("ageGroup");
         const startBtn = document.getElementById("start-btn");
@@ -178,13 +177,6 @@
         nameInput.addEventListener("input", updateStartButton);
         ageSelect.addEventListener("change", updateStartButton);
 
-        let allQuestions = [];
-        let currentQuestions = [];
-        let answers = [];
-        let nameVal = "", ageGroupVal = "";
-        let questionIndex = 0;
-        let sometimesCount = 0;
-
         async function loadQuestions() {
             try {
                 const response = await fetch('questions.json');
@@ -192,7 +184,6 @@
                 allQuestions = data.questions || [];
             } catch (e) {
                 console.error("Failed to load questions.json", e);
-                alert("Could not load questions.json.");
             }
         }
 
@@ -325,13 +316,6 @@
         }
 
         document.addEventListener("keydown", handleKey);
-
-        // Simple fallback check
-        window.addEventListener('load', () => {
-            if (!document.querySelector('.modal')) {
-                applyFallback();
-            }
-        });
     </script>
 </body>
 </html>
