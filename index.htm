@@ -116,7 +116,6 @@
             line-height: 1.5;
         }
 
-        /* Mobile Landscape */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 16px 18px; }
             h1 { font-size: 1.65rem; }
@@ -125,7 +124,6 @@
             input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
         }
 
-        /* Hide legend on mobile portrait */
         @media (max-width: 600px) and (orientation: portrait) {
             .legend { display: none; }
         }
@@ -214,6 +212,45 @@
         ageSelect.addEventListener("change", () => {
             updateStartButton();
             updateBackground();
+        });
+
+        // Keyboard support for age group cycling on start screen only
+        function cycleAgeGroup(direction) {
+            if (document.getElementById("start-screen").classList.contains("hidden")) return;
+            
+            const options = ageSelect.options;
+            let currentIndex = ageSelect.selectedIndex;
+            
+            let nextIndex = currentIndex + direction;
+            if (nextIndex < 1) nextIndex = options.length - 1; // skip the disabled first option
+            if (nextIndex >= options.length) nextIndex = 1;
+            
+            ageSelect.selectedIndex = nextIndex;
+            updateStartButton();
+            updateBackground();
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
+                // Quiz screen shortcuts
+                switch (e.key.toLowerCase()) {
+                    case "arrowleft": case "n": answer(0); break;
+                    case "arrowright": case "y": answer(2); break;
+                    case "arrowup": case "arrowdown": case "s": case " ": 
+                        e.preventDefault(); answer(1); break;
+                }
+            } else if (!document.getElementById("start-screen").classList.contains("hidden")) {
+                // Start screen shortcuts
+                if (e.key === "Enter" && !startBtn.disabled) {
+                    startScreening();
+                } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    cycleAgeGroup(-1);
+                } else if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    cycleAgeGroup(1);
+                }
+            }
         });
 
         function createClouds() {
@@ -342,19 +379,6 @@
         function restart() {
             location.reload();
         }
-
-        document.addEventListener("keydown", (e) => {
-            if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
-                switch (e.key.toLowerCase()) {
-                    case "arrowleft": case "n": answer(0); break;
-                    case "arrowright": case "y": answer(2); break;
-                    case "arrowup": case "arrowdown": case "s": case " ": 
-                        e.preventDefault(); answer(1); break;
-                }
-            } else if (!document.getElementById("start-screen").classList.contains("hidden")) {
-                if (e.key === "Enter" && !startBtn.disabled) startScreening();
-            }
-        });
 
         window.addEventListener('load', () => {
             updateStartButton();
