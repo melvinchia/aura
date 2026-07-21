@@ -116,10 +116,12 @@
             line-height: 1.5;
         }
 
+        /* Mobile Landscape - Hide intro text only on quiz/results screens */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 16px 18px; }
             h1 { font-size: 1.65rem; }
-            .intro-text { display: none; }
+            #quiz-screen .intro-text,
+            #results-screen .intro-text { display: none; }
             label { margin: 8px 0 4px; font-size: 1.1rem; }
             input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
         }
@@ -214,14 +216,12 @@
             updateBackground();
         });
 
-        // Keyboard support for age group cycling on start screen
         function cycleAgeGroup(direction) {
             if (document.getElementById("start-screen").classList.contains("hidden")) return;
             
             const options = ageSelect.options;
             let currentIndex = ageSelect.selectedIndex;
             let nextIndex = currentIndex + direction;
-            
             if (nextIndex < 1) nextIndex = options.length - 1;
             if (nextIndex >= options.length) nextIndex = 1;
             
@@ -381,7 +381,7 @@
         window.addEventListener('load', () => {
             updateStartButton();
             createClouds();
-            nameInput.focus(); // Auto-focus name field
+            nameInput.focus();
         });
     </script>
 </body>
