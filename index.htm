@@ -16,7 +16,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.6s ease;
+            transition: background 0.8s ease;
             overflow: hidden;
             position: relative;
         }
@@ -61,13 +61,14 @@
 
         .modal-content {
             padding: 40px 35px;
+            text-align: center;
         }
 
         h1, h2 { color: #2c5aa0; }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin: 8px 0 6px;
             font-weight: 600;
             color: #444;
         }
@@ -81,7 +82,7 @@
             border-radius: 10px;
             background: white;
             display: block;
-            margin: 8px auto;
+            margin: 8px auto 20px;
             box-sizing: border-box;
         }
 
@@ -167,7 +168,7 @@
                 <label>What's your name?</label>
                 <input id="name" type="text" placeholder="e.g., Alex">
 
-                <label style="margin-top: 25px;">Select your age group</label>
+                <label style="margin-top: 30px;">Select your age group</label>
                 <select id="ageGroup">
                     <option value="" disabled selected>Select your age group</option>
                     <option value="7-12">7-12 years</option>
@@ -204,4 +205,211 @@
             <div id="results-screen" class="hidden">
                 <h2>Thank you, <span id="result-name"></span>!</h2>
                 <p>Your ADHD Trait Score: <strong id="adhd-score"></strong>/10</p>
-                <p
+                <p>Your Autism Trait Score: <strong id="autism-score"></strong>/10</p>
+                <p id="warning-text" class="warning"></p>
+                <p><em>Higher scores suggest exploring this further with a healthcare professional.</em></p>
+                <button onclick="restart()">Start Over</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const nameInput = document.getElementById("name");
+        const ageSelect = document.getElementById("ageGroup");
+        const startBtn = document.getElementById("start-btn");
+        const body = document.body;
+
+        let allQuestions = [];
+        let currentQuestions = [];
+        let answers = [];
+        let nameVal = "", ageGroupVal = "";
+        let questionIndex = 0;
+        let sometimesCount = 0;
+
+        function updateStartButton() {
+            const nameFilled = nameInput.value.trim().length > 0;
+            const ageSelected = ageSelect.value !== "";
+            startBtn.disabled = !(nameFilled && ageSelected);
+        }
+
+        function updateBackground() {
+            body.className = '';
+            const age = ageSelect.value;
+            if (age === "7-12") body.classList.add("age-7-12");
+            else if (age === "13-20") body.classList.add("age-13-20");
+            else if (age === "21-40") body.classList.add("age-21-40");
+            else if (age === "41+") body.classList.add("age-41");
+        }
+
+        nameInput.addEventListener("input", updateStartButton);
+        ageSelect.addEventListener("change", () => {
+            updateStartButton();
+            updateBackground();
+        });
+
+        function createClouds() {
+            const cloudsContainer = document.getElementById("clouds");
+            cloudsContainer.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const cloud = document.createElement("div");
+                cloud.className = "cloud";
+                const size = Math.random() * 120 + 80;
+                cloud.style.width = `${size}px`;
+                cloud.style.height = `${size * 0.65}px`;
+                cloud.style.top = `${Math.random() * 55}vh`;
+                cloud.style.opacity = Math.random() * 0.6 + 0.45;
+                cloud.style.animationDuration = `${Math.random() * 90 + 70}s`;
+                cloud.style.animationDelay = `-${Math.random() * 80}s`;
+                cloudsContainer.appendChild(cloud);
+            }
+        }
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch('questions.json');
+                const data = await response.json();
+                allQuestions = data.questions || [];
+            } catch (e) {
+                console.error("Failed to load questions.json", e);
+                alert("Could not load questions.json.");
+            }
+        }
+
+        async function startScreening() {
+            if (startBtn.disabled) return;
+
+            const selectedGroup = ageSelect.value;
+            await loadQuestions();
+
+            nameVal = nameInput.value.trim() || "Friend";
+            ageGroupVal = selectedGroup;
+            sometimesCount = 0;
+
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("greeting").innerHTML = `Hi ${nameVal}! Let's go through some questions together.`;
+
+            const adhdPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q => q.text);
+            const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
+
+            if (adhdPool.length < 15 || autismPool.length < 15) {
+                alert("Not enough questions for this age group.");
+                return;
+            }
+
+            const selectedAdhd = shuffle(adhdPool).slice(0, 15);
+            const selectedAutism = shuffle(autismPool).slice(0, 15);
+
+            currentQuestions = shuffle([...selectedAdhd, ...selectedAutism]);
+            answers = [];
+            questionIndex = 0;
+            showQuestion();
+        }
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        function showQuestion() {
+            if (questionIndex >= currentQuestions.length) {
+                calculateResults();
+                return;
+            }
+            document.getElementById("question-text").innerText = currentQuestions[questionIndex];
+            const progress = Math.round(((questionIndex) / Math.max(currentQuestions.length, 1)) * 100);
+            document.getElementById("progress").style.width = `${progress}%`;
+        }
+
+        function answer(score) {
+            const currentQ = currentQuestions[questionIndex];
+            const isAdhd = allQuestions.some(q => q.text === currentQ && q.condition === "adhd");
+            
+            answers.push({ q: currentQ, score: score, type: isAdhd ? 'adhd' : 'autism' });
+
+            if (score === 1) sometimesCount++;
+
+            questionIndex++;
+
+            if (score === 1) { 
+                const poolType = answers[answers.length-1].type;
+                const usedTexts = new Set(currentQuestions.concat(answers.map(a => a.q)));
+                
+                const pool = allQuestions
+                    .filter(q => q.ageGroup === ageGroupVal && q.condition === poolType)
+                    .map(q => q.text)
+                    .filter(text => !usedTexts.has(text));
+
+                if (pool.length > 0) {
+                    const replacement = pool[Math.floor(Math.random() * pool.length)];
+                    currentQuestions[questionIndex - 1] = replacement;
+                    questionIndex--;
+                }
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("results-screen").classList.remove("hidden");
+
+            let adhdTotal = 0, autismTotal = 0, adhdCount = 0, autismCount = 0;
+            answers.forEach(a => {
+                if (a.type === 'adhd') { adhdTotal += a.score; adhdCount++; }
+                else { autismTotal += a.score; autismCount++; }
+            });
+
+            const adhdScore = adhdCount ? Math.min(10, Math.max(1, Math.round((adhdTotal / (adhdCount * 2)) * 10))) : 1;
+            const autismScore = autismCount ? Math.min(10, Math.max(1, Math.round((autismTotal / (autismCount * 2)) * 10))) : 1;
+
+            document.getElementById("result-name").innerText = nameVal;
+            document.getElementById("adhd-score").innerText = adhdScore;
+            document.getElementById("autism-score").innerText = autismScore;
+
+            const warningEl = document.getElementById("warning-text");
+            if (sometimesCount >= MAX_SOMETIMES) {
+                warningEl.innerHTML = `⚠️ Too many "Sometimes" answers (${sometimesCount} / ${MAX_SOMETIMES}). Results may be less accurate.`;
+            } else {
+                warningEl.innerHTML = "";
+            }
+        }
+
+        function restart() {
+            location.reload();
+        }
+
+        function handleKey(e) {
+            if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
+                switch (e.key.toLowerCase()) {
+                    case "arrowleft":
+                    case "n":
+                        answer(0);
+                        break;
+                    case "arrowright":
+                    case "y":
+                        answer(2);
+                        break;
+                    case "arrowup":
+                    case "arrowdown":
+                    case "s":
+                    case " ":
+                        e.preventDefault();
+                        answer(1);
+                        break;
+                }
+            } else if (!document.getElementById("start-screen").classList.contains("hidden")) {
+                if (e.key === "Enter" && !startBtn.disabled) {
+                    startScreening();
+                }
+            }
+        }
+
+        document.addEventListener("keydown", handleKey);
+
+        window.addEventListener('load', () => {
+            updateStartButton();
+            createClouds();
+        });
+    </script>
+</body>
+</html>
