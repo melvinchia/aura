@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AURA - Age-aware Understanding & Resourceful Assessment</title>
     
-    <script>const MAX_SOMETIMES = 10;</script>
+    <script>
+        const MAX_SOMETIMES = 5;
+        const MAX_QUESTIONS = 10;
+    </script>
 
     <style>
         body { 
@@ -116,7 +119,6 @@
             line-height: 1.5;
         }
 
-        /* Mobile Landscape - Reduced spacing */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 14px 16px; }
             h1 { font-size: 1.6rem; margin-bottom: 6px; }
@@ -125,7 +127,6 @@
             input[type="text"], select { padding: 10px 12px; font-size: 1.0rem; margin: 4px auto 8px; }
             button { padding: 13px 26px; font-size: 1.1rem; margin: 14px auto; }
             .options { margin: 22px 0; gap: 10px; }
-            .legend { margin-top: 18px; padding: 10px; font-size: 0.85rem; }
         }
 
         @media (max-width: 600px) and (orientation: portrait) {
@@ -161,7 +162,7 @@
             <div id="quiz-screen" class="hidden">
                 <div id="progress-container"><div id="progress"></div></div>
                 <p id="greeting" style="font-size:1.2em;"></p>
-                <div id="question-text" style="font-size:1.35em; min-height:65px; margin:15px 0;"></div>
+                <div id="question-text" style="font-size:1.35em; min-height:70px; margin:20px 0;"></div>
                 
                 <div class="options">
                     <button id="no-btn" onclick="answer(0)">No</button>
@@ -304,13 +305,15 @@
             const adhdPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q => q.text);
             const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
 
-            if (adhdPool.length < 15 || autismPool.length < 15) {
+            const questionsPerType = Math.floor(MAX_QUESTIONS / 2);
+
+            if (adhdPool.length < questionsPerType || autismPool.length < questionsPerType) {
                 alert("Not enough questions for this age group.");
                 return;
             }
 
-            const selectedAdhd = shuffle(adhdPool).slice(0, 15);
-            const selectedAutism = shuffle(autismPool).slice(0, 15);
+            const selectedAdhd = shuffle(adhdPool).slice(0, questionsPerType);
+            const selectedAutism = shuffle(autismPool).slice(0, questionsPerType);
 
             currentQuestions = shuffle([...selectedAdhd, ...selectedAutism]);
             answers = [];
