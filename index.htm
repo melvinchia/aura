@@ -119,16 +119,19 @@
             line-height: 1.5;
         }
 
-        /* Mobile Landscape - Tight spacing, show all header lines on first screen */
+        /* Mobile Landscape */
         @media (orientation: landscape) and (max-height: 580px) {
             .modal-content { padding: 14px 16px; }
             h1 { font-size: 1.6rem; margin-bottom: 5px; }
-            .intro-text { font-size: 0.95rem; margin-bottom: 3px; line-height: 1.3; }
+            /* Hide 1st, 3rd, 4th lines + legend on quiz and results only */
+            #quiz-screen .intro-text,
+            #results-screen .intro-text,
+            #quiz-screen .legend,
+            #results-screen .legend { display: none; }
             label { margin: 7px 0 4px; font-size: 1.08rem; }
             input[type="text"], select { padding: 10px 12px; font-size: 1.0rem; margin: 4px auto 8px; }
             button { padding: 13px 26px; font-size: 1.1rem; margin: 12px auto; }
-            .options { margin: 22px 0; gap: 10px; }
-            .legend { margin-top: 18px; padding: 10px; font-size: 0.85rem; }
+            .options { margin: 20px 0; gap: 10px; }
         }
 
         @media (max-width: 600px) and (orientation: portrait) {
@@ -170,16 +173,6 @@
                     <button id="no-btn" onclick="answer(0)">No</button>
                     <button id="sometimes-btn" onclick="answer(1)">Sometimes</button>
                     <button id="yes-btn" onclick="answer(2)">Yes</button>
-                </div>
-
-                <div class="legend">
-                    <strong>Keyboard Shortcuts:</strong><br>
-                    ← Left Arrow = No &nbsp;&nbsp; 
-                    → Right Arrow = Yes &nbsp;&nbsp; 
-                    ↑ / ↓ Arrow = Sometimes &nbsp;&nbsp;<br>
-                    Y = Yes &nbsp;&nbsp; 
-                    N = No &nbsp;&nbsp; 
-                    S or Spacebar = Sometimes
                 </div>
             </div>
 
