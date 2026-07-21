@@ -141,7 +141,7 @@
 
             <div id="start-screen">
                 <label>What's your name?</label>
-                <input id="name" type="text" placeholder="e.g., Alex">
+                <input id="name" type="text" placeholder="e.g., Alex" autofocus>
 
                 <select id="ageGroup" style="margin-top: 8px;">
                     <option value="" disabled selected>Select your age group</option>
@@ -214,15 +214,15 @@
             updateBackground();
         });
 
-        // Keyboard support for age group cycling on start screen only
+        // Keyboard support for age group cycling on start screen
         function cycleAgeGroup(direction) {
             if (document.getElementById("start-screen").classList.contains("hidden")) return;
             
             const options = ageSelect.options;
             let currentIndex = ageSelect.selectedIndex;
-            
             let nextIndex = currentIndex + direction;
-            if (nextIndex < 1) nextIndex = options.length - 1; // skip the disabled first option
+            
+            if (nextIndex < 1) nextIndex = options.length - 1;
             if (nextIndex >= options.length) nextIndex = 1;
             
             ageSelect.selectedIndex = nextIndex;
@@ -232,7 +232,6 @@
 
         document.addEventListener("keydown", (e) => {
             if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
-                // Quiz screen shortcuts
                 switch (e.key.toLowerCase()) {
                     case "arrowleft": case "n": answer(0); break;
                     case "arrowright": case "y": answer(2); break;
@@ -240,7 +239,6 @@
                         e.preventDefault(); answer(1); break;
                 }
             } else if (!document.getElementById("start-screen").classList.contains("hidden")) {
-                // Start screen shortcuts
                 if (e.key === "Enter" && !startBtn.disabled) {
                     startScreening();
                 } else if (e.key === "ArrowUp") {
@@ -383,6 +381,7 @@
         window.addEventListener('load', () => {
             updateStartButton();
             createClouds();
+            nameInput.focus(); // Auto-focus name field
         });
     </script>
 </body>
