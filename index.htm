@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALICE - Friendly Neuro Screening</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f8ff; color: #333; }
+        h1, h2 { color: #4a86e8; }
+        button { padding: 10px 20px; margin: 10px; background: #4a86e8; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #357abd; }
+        .question { font-size: 1.2em; margin: 20px 0; }
+        .options button { background: #5cb85c; margin: 5px; }
+        #progress { height: 10px; background: #4a86e8; transition: width 0.3s; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Hi! I'm ALICE 🌟</h1>
+    <p>I'm here to help with a gentle, private screening for ADHD or Autism traits. This is **not a diagnosis**—just helpful info.</p>
+
+    <div id="start-screen">
+        <label>What's your name? <input id="name" type="text" placeholder="e.g., Alex"></label><br><br>
+        <label>Select your age group:
+            <select id="ageGroup">
+                <option value="7-12">7-12 years</option>
+                <option value="13-20">13-20 years</option>
+                <option value="21-40">21-40 years</option>
+                <option value="41+">41 and above</option>
+            </select>
+        </label><br><br>
+        <button onclick="startScreening()">Start Screening</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div id="progress-container"><div id="progress" style="width: 0%;"></div></div>
+        <p id="greeting"></p>
+        <div class="question" id="question-text"></div>
+        <div class="options">
+            <button onclick="answer(2)">Yes</button>
+            <button onclick="answer(1)">Sometimes</button>
+            <button onclick="answer(0)">No</button>
+        </div>
+    </div>
+
+    <div id="results-screen" class="hidden">
+        <h2>Thank you, <span id="result-name"></span>!</h2>
+        <p>Your ADHD Trait Score: <strong id="adhd-score"></strong>/10</p>
+        <p>Your Autism Trait Score: <strong id="autism-score"></strong>/10</p>
+        <p><em>Higher scores suggest exploring this further with a healthcare professional. ALICE is here to support, not diagnose.</em></p>
+        <button onclick="restart()">Start Over</button>
+    </div>
+
+    <script>
+        let allQuestions = [];
+        let currentQuestions = [];
+        let answers = [];
+        let nameVal = "", ageGroupVal = "";
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch('questions.json');
+                const data = await response.json();
+                allQuestions = data.questions || [];
+            } catch (e) {
+                console.error("Failed to load questions.json", e);
+                alert("Could not load questions. Check that questions.json is in the same folder.");
+            }
+        }
+
+        async function startScreening() {
+            await loadQuestions(); // Load once
+
+            nameVal = document.getElementById("name").value.trim() || "Friend";
+            ageGroupVal = document.getElementById("ageGroup").value;
+
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("greeting").innerHTML = `Hi ${nameVal}! Let's go through some questions together.`;
+
+            // Filter pools
+            const adhdPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q => q.text);
+            const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
+
+            if (adhdPool.length < 15 || autismPool.length < 15) {
+                alert("Not enough questions for this age group. Please update questions.json.");
+                return;
+            }
+
+            const selectedAdhd = shuffle(adhdPool).slice(0, 15);
+            const selectedAutism = shuffle(autismPool).slice(0, 15);
+
+            currentQuestions = shuffle([...selectedAdhd, ...selectedAutism]);
+            answers = [];
+            showQuestion();
+        }
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        let questionIndex = 0;
+
+        function showQuestion() {
+            if (questionIndex >= currentQuestions.length) {
+                calculateResults();
+                return;
+            }
+            document.getElementById("question-text").innerText = currentQuestions[questionIndex];
+            const progress = Math.round(((questionIndex) / currentQuestions.length) * 100);
+            document.getElementById("progress").style.width = `${progress}%`;
+        }
+
+        function answer(score) {
+            const currentQ = currentQuestions[questionIndex];
+            const isAdhd = allQuestions.find(q => q.text === currentQ && q.condition === "adhd");
+            answers.push({
+                q: currentQ,
+                score: score,
+                type: isAdhd ? 'adhd' : 'autism'
+            });
+
+            questionIndex++;
+
+            if (score === 1) { // Sometimes -> replace with new random non-repeated
+                const pool = answers[answers.length-1].type === 'adhd' 
+                    ? allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q=>q.text)
+                    : allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q=>q.text);
+                
+                let replacement;
+                do {
+                    replacement = pool[Math.floor(Math.random() * pool.length)];
+                } while (currentQuestions.includes(replacement) || answers.some(a => a.q === replacement));
+
+                currentQuestions[questionIndex - 1] = replacement; // Replace for scoring
+                questionIndex--; 
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("results-screen").classList.remove("hidden");
+
+            let adhdTotal = 0, autismTotal = 0, adhdCount = 0, autismCount = 0;
+            answers.forEach(a => {
+                if (a.type === 'adhd') { adhdTotal += a.score; adhdCount++; }
+                else { autismTotal += a.score; autismCount++; }
+            });
+
+            const adhdScore = adhdCount ? Math.min(10, Math.max(1, Math.round((adhdTotal / (adhdCount * 2)) * 10))) : 1;
+            const autismScore = autismCount ? Math.min(10, Math.max(1, Math.round((autismTotal / (autismCount * 2)) * 10))) : 1;
+
+            document.getElementById("result-name").innerText = nameVal;
+            document.getElementById("adhd-score").innerText = adhdScore;
+            document.getElementById("autism-score").innerText = autismScore;
+        }
+
+        function restart() {
+            location.reload();
+        }
+
+        // Auto-load on start (optional)
+        window.onload = () => { /* ready */ };
+    </script>
+</body>
+</html>
