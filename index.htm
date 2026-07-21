@@ -5,14 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALICE - Friendly Neuro Screening</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f8ff; color: #333; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f0f8ff; 
+            color: #333; 
+        }
         h1, h2 { color: #4a86e8; }
-        button { padding: 10px 20px; margin: 10px; background: #4a86e8; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #357abd; }
-        .question { font-size: 1.2em; margin: 20px 0; }
-        .options button { background: #5cb85c; margin: 5px; }
-        #progress { height: 10px; background: #4a86e8; transition: width 0.3s; }
+        
+        button { 
+            padding: 18px 32px; 
+            margin: 8px; 
+            font-size: 1.3em; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            min-width: 160px;
+        }
+        .options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        #no-btn    { background: #d9534f; color: white; } /* Reddish */
+        #sometimes-btn { background: #f0ad4e; color: white; } /* Orange */
+        #yes-btn   { background: #5cb85c; color: white; } /* Green */
+
+        #progress-container {
+            height: 12px;
+            background: #ddd;
+            border-radius: 6px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        #progress { 
+            height: 100%; 
+            background: #4a86e8; 
+            width: 0%; 
+            transition: width 0.3s ease;
+        }
         .hidden { display: none; }
+        .legend {
+            margin-top: 30px;
+            padding: 15px;
+            background: #e8f0ff;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
     </style>
 </head>
 <body>
@@ -33,13 +76,24 @@
     </div>
 
     <div id="quiz-screen" class="hidden">
-        <div id="progress-container"><div id="progress" style="width: 0%;"></div></div>
-        <p id="greeting"></p>
-        <div class="question" id="question-text"></div>
+        <div id="progress-container"><div id="progress"></div></div>
+        <p id="greeting" style="font-size:1.2em;"></p>
+        <div class="question" id="question-text" style="font-size:1.35em; min-height:80px;"></div>
+        
         <div class="options">
-            <button onclick="answer(2)">Yes</button>
-            <button onclick="answer(1)">Sometimes</button>
-            <button onclick="answer(0)">No</button>
+            <button id="no-btn" onclick="answer(0)">No</button>
+            <button id="sometimes-btn" onclick="answer(1)">Sometimes</button>
+            <button id="yes-btn" onclick="answer(2)">Yes</button>
+        </div>
+
+        <div class="legend">
+            <strong>Keyboard Shortcuts:</strong><br>
+            ← Left Arrow = No &nbsp;&nbsp; 
+            → Right Arrow = Yes &nbsp;&nbsp; 
+            ↑ Down Arrow = Sometimes &nbsp;&nbsp;<br>
+            Y = Yes &nbsp;&nbsp; 
+            N = No &nbsp;&nbsp; 
+            S or Spacebar = Sometimes
         </div>
     </div>
 
@@ -47,7 +101,7 @@
         <h2>Thank you, <span id="result-name"></span>!</h2>
         <p>Your ADHD Trait Score: <strong id="adhd-score"></strong>/10</p>
         <p>Your Autism Trait Score: <strong id="autism-score"></strong>/10</p>
-        <p><em>Higher scores suggest exploring this further with a healthcare professional. ALICE is here to support, not diagnose.</em></p>
+        <p><em>Higher scores suggest exploring this further with a healthcare professional.</em></p>
         <button onclick="restart()">Start Over</button>
     </div>
 
@@ -56,6 +110,7 @@
         let currentQuestions = [];
         let answers = [];
         let nameVal = "", ageGroupVal = "";
+        let questionIndex = 0;
 
         async function loadQuestions() {
             try {
@@ -64,12 +119,12 @@
                 allQuestions = data.questions || [];
             } catch (e) {
                 console.error("Failed to load questions.json", e);
-                alert("Could not load questions. Check that questions.json is in the same folder.");
+                alert("Could not load questions.json. Make sure the file is in the same folder.");
             }
         }
 
         async function startScreening() {
-            await loadQuestions(); // Load once
+            await loadQuestions();
 
             nameVal = document.getElementById("name").value.trim() || "Friend";
             ageGroupVal = document.getElementById("ageGroup").value;
@@ -78,7 +133,111 @@
             document.getElementById("quiz-screen").classList.remove("hidden");
             document.getElementById("greeting").innerHTML = `Hi ${nameVal}! Let's go through some questions together.`;
 
-            // Filter pools
+            const adhdPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q => q.text);
+            const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
+
+            if (adhdPool.length < 15 || autismPool.length < 15) {
+                alert("Not enough questions for this age group. Please update questions.json with all 400 questions.");
+                return;
+            }
+
+            const selectedAdhd = shuffle(adhdPool).slice(0, 15);
+            const selectedAutism = shuffle(autismPool).slice(0, 15);
+
+            currentQuestions = shuffle([...selectedAdhd, ...selectedAutism]);
+            answers = [];
+            questionIndex = 0;
+            showQuestion();
+        }
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        function showQuestion() {
+            if (questionIndex >= currentQuestions.length) {
+                calculateResults();
+                return;
+            }
+            document.getElementById("question-text").innerText = currentQuestions[questionIndex];
+            const progress = Math.round(((questionIndex) / currentQuestions.length) * 100);
+            document.getElementById("progress").style.width = `${progress}%`;
+        }
+
+        function answer(score) {
+            const currentQ = currentQuestions[questionIndex];
+            const isAdhd = allQuestions.some(q => q.text === currentQ && q.condition === "adhd");
+            
+            answers.push({ q: currentQ, score: score, type: isAdhd ? 'adhd' : 'autism' });
+
+            questionIndex++;
+
+            if (score === 1) { // Sometimes → replace
+                const poolType = answers[answers.length-1].type;
+                const pool = allQuestions
+                    .filter(q => q.ageGroup === ageGroupVal && q.condition === poolType)
+                    .map(q => q.text);
+                
+                let replacement;
+                do {
+                    replacement = pool[Math.floor(Math.random() * pool.length)];
+                } while (currentQuestions.includes(replacement) || answers.some(a => a.q === replacement));
+
+                currentQuestions[questionIndex - 1] = replacement;
+                questionIndex--;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("results-screen").classList.remove("hidden");
+
+            let adhdTotal = 0, autismTotal = 0, adhdCount = 0, autismCount = 0;
+            answers.forEach(a => {
+                if (a.type === 'adhd') { adhdTotal += a.score; adhdCount++; }
+                else { autismTotal += a.score; autismCount++; }
+            });
+
+            const adhdScore = adhdCount ? Math.min(10, Math.max(1, Math.round((adhdTotal / (adhdCount * 2)) * 10))) : 1;
+            const autismScore = autismCount ? Math.min(10, Math.max(1, Math.round((autismTotal / (autismCount * 2)) * 10))) : 1;
+
+            document.getElementById("result-name").innerText = nameVal;
+            document.getElementById("adhd-score").innerText = adhdScore;
+            document.getElementById("autism-score").innerText = autismScore;
+        }
+
+        function restart() {
+            location.reload();
+        }
+
+        // Keyboard Support
+        function handleKey(e) {
+            if (document.getElementById("quiz-screen").classList.contains("hidden")) return;
+
+            switch (e.key.toLowerCase()) {
+                case "arrowleft":
+                case "n":
+                    answer(0);
+                    break;
+                case "arrowright":
+                case "y":
+                    answer(2);
+                    break;
+                case "arrowup":
+                case "arrowdown":
+                case "s":
+                case " ":
+                    e.preventDefault(); // prevent page scroll on space
+                    answer(1);
+                    break;
+            }
+        }
+
+        document.addEventListener("keydown", handleKey);
+    </script>
+</body>
+</html>            // Filter pools
             const adhdPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q => q.text);
             const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
 
