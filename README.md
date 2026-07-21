@@ -46,7 +46,7 @@ Contributions are welcome! Feel free to improve the questions, design, or access
 
 ## License
 
-MIT License
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
