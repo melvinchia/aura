@@ -33,6 +33,7 @@
             position: absolute;
             background: rgba(255,255,255,0.85);
             border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(255,255,255,0.6);
             animation: drift linear infinite;
         }
         @keyframes drift { from { transform: translateX(-300px); } to { transform: translateX(120vw); } }
@@ -54,12 +55,13 @@
             overflow-y: auto;
         }
 
-        h1 { font-size: 2.1rem; color: #2c5aa0; margin-bottom: 8px; }
+        h1 { font-size: 2.1rem; color: #2c5aa0; margin-bottom: 10px; }
         label { display: block; margin: 12px 0 6px; font-weight: 600; color: #444; }
         input[type="text"], select {
             width: 100%; max-width: 420px; padding: 15px 18px; font-size: 1.2rem;
             border: 2px solid #ddd; border-radius: 10px; margin: 8px auto 18px;
         }
+        input:focus, select:focus { border-color: #4a86e8; box-shadow: 0 0 0 4px rgba(74,134,232,0.15); outline: none; }
 
         button { 
             padding: 16px 32px; margin: 22px auto; font-size: 1.3rem; border: none; 
@@ -70,32 +72,57 @@
         #start-btn { background: #4caf50; color: white; }
         #start-btn:hover:not(:disabled) { background: #43a047; transform: scale(1.03); }
 
-        .options { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 30px 0; }
-        .options button { padding: 14px 22px; font-size: 1.1rem; min-width: 105px; border-radius: 10px; }
+        /* Answer buttons */
+        .options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 35px 0;
+        }
+        .options button {
+            padding: 16px 32px;
+            font-size: 1.15rem;
+            min-width: 130px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        #no-btn    { background: #e74c3c; color: white; }
+        #sometimes-btn { background: #f39c12; color: white; }
+        #yes-btn   { background: #27ae60; color: white; }
+
+        #progress-container {
+            height: 12px;
+            background: #ddd;
+            border-radius: 6px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        #progress { height: 100%; background: #4a86e8; width: 0%; transition: width 0.3s ease; }
 
         .hidden { display: none; }
 
-        /* Responsive fixes */
-        @media (max-width: 600px) { /* Portrait mobile */
-            .modal-content { padding: 25px 20px; }
-            h1 { font-size: 1.75rem; }
-            input, select, button { font-size: 1.1rem; padding: 14px 16px; }
+        .legend {
+            margin-top: 30px;
+            padding: 15px;
+            background: #e8f0ff;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            text-align: left;
+            line-height: 1.5;
         }
 
-        @media (orientation: landscape) and (max-height: 550px) { /* Landscape mobile (iPhone Pro Max etc.) */
-            .modal-content { 
-                padding: 20px 18px; 
-                max-height: 98vh;
-            }
+        /* Responsive */
+        @media (max-width: 600px) {
+            .modal-content { padding: 25px 20px; }
+            h1 { font-size: 1.75rem; }
+        }
+
+        @media (orientation: landscape) and (max-height: 550px) {
+            .modal-content { padding: 20px 18px; max-height: 98vh; }
             h1 { font-size: 1.65rem; }
-            label { font-size: 1rem; margin: 8px 0 4px; }
-            input, select { padding: 12px 16px; font-size: 1.05rem; }
-            button, .options button { 
-                padding: 13px 24px; 
-                font-size: 1.05rem; 
-                min-width: 100px;
-            }
-            #start-btn { min-width: 100%; padding: 15px; }
+            input, select, button, .options button { font-size: 1.05rem; padding: 13px 24px; }
         }
     </style>
 </head>
@@ -106,14 +133,14 @@
         <div class="modal-content">
             <h1>Welcome to AURA 🌟</h1>
             <p><strong>AURA</strong> — <em>Age-aware Understanding & Resourceful Assessment</em></p>
-            <p>A gentle, private, and respectful tool to help you explore possible ADHD or Autism traits.</p>
+            <p>A gentle, private, and respectful tool to help you explore possible ADHD or Autism traits across different age groups.</p>
             <p><strong>This is not a diagnosis.</strong> Professional evaluation is recommended.</p>
 
             <div id="start-screen">
                 <label>What's your name?</label>
                 <input id="name" type="text" placeholder="e.g., Alex">
 
-                <label style="margin-top: 20px;">Select your age group</label>
+                <label style="margin-top: 25px;">Select your age group</label>
                 <select id="ageGroup">
                     <option value="" disabled selected>Select your age group</option>
                     <option value="7-12">7-12 years</option>
@@ -125,16 +152,210 @@
                 <button id="start-btn" onclick="startScreening()" disabled>Start Screening</button>
             </div>
 
-            <!-- Quiz and Results sections remain the same -->
-            <div id="quiz-screen" class="hidden">...</div>
-            <div id="results-screen" class="hidden">...</div>
+            <div id="quiz-screen" class="hidden">
+                <div id="progress-container"><div id="progress"></div></div>
+                <p id="greeting" style="font-size:1.2em;"></p>
+                <div id="question-text" style="font-size:1.35em; min-height:80px; margin:25px 0;"></div>
+                
+                <div class="options">
+                    <button id="no-btn" onclick="answer(0)">No</button>
+                    <button id="sometimes-btn" onclick="answer(1)">Sometimes</button>
+                    <button id="yes-btn" onclick="answer(2)">Yes</button>
+                </div>
+
+                <div class="legend">
+                    <strong>Keyboard Shortcuts:</strong><br>
+                    ← Left Arrow = No &nbsp;&nbsp; 
+                    → Right Arrow = Yes &nbsp;&nbsp; 
+                    ↑ / ↓ Arrow = Sometimes &nbsp;&nbsp;<br>
+                    Y = Yes &nbsp;&nbsp; 
+                    N = No &nbsp;&nbsp; 
+                    S or Spacebar = Sometimes
+                </div>
+            </div>
+
+            <div id="results-screen" class="hidden">
+                <h2>Thank you, <span id="result-name"></span>!</h2>
+                <p>Your ADHD Trait Score: <strong id="adhd-score"></strong>/10</p>
+                <p>Your Autism Trait Score: <strong id="autism-score"></strong>/10</p>
+                <p id="warning-text" class="warning"></p>
+                <p><em>Higher scores suggest exploring this further with a healthcare professional.</em></p>
+                <button onclick="restart()">Start Over</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Full working script from previous response (with startScreening etc.)
-        // (I omitted the long script here for brevity - use the full one from before)
-        // Make sure you have the complete <script> block
+        const nameInput = document.getElementById("name");
+        const ageSelect = document.getElementById("ageGroup");
+        const startBtn = document.getElementById("start-btn");
+        const body = document.body;
+
+        let allQuestions = [];
+        let currentQuestions = [];
+        let answers = [];
+        let nameVal = "", ageGroupVal = "";
+        let questionIndex = 0;
+        let sometimesCount = 0;
+
+        function updateStartButton() {
+            startBtn.disabled = !(nameInput.value.trim().length > 0 && ageSelect.value !== "");
+        }
+
+        function updateBackground() {
+            body.className = ageSelect.value ? `age-${ageSelect.value.replace('+', '')}` : '';
+        }
+
+        nameInput.addEventListener("input", updateStartButton);
+        ageSelect.addEventListener("change", () => {
+            updateStartButton();
+            updateBackground();
+        });
+
+        function createClouds() {
+            const container = document.getElementById("clouds");
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const cloud = document.createElement("div");
+                cloud.className = "cloud";
+                const size = Math.random() * 120 + 80;
+                cloud.style.width = `${size}px`;
+                cloud.style.height = `${size * 0.65}px`;
+                cloud.style.top = `${Math.random() * 55}vh`;
+                cloud.style.opacity = Math.random() * 0.6 + 0.45;
+                cloud.style.animationDuration = `${Math.random() * 90 + 70}s`;
+                cloud.style.animationDelay = `-${Math.random() * 80}s`;
+                container.appendChild(cloud);
+            }
+        }
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch('questions.json');
+                const data = await response.json();
+                allQuestions = data.questions || [];
+            } catch (e) {
+                console.error("Failed to load questions.json", e);
+            }
+        }
+
+        async function startScreening() {
+            if (startBtn.disabled) return;
+
+            const selectedGroup = ageSelect.value;
+            await loadQuestions();
+
+            nameVal = nameInput.value.trim() || "Friend";
+            ageGroupVal = selectedGroup;
+            sometimesCount = 0;
+
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("greeting").innerHTML = `Hi ${nameVal}! Let's go through some questions together.`;
+
+            const adhdPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "adhd").map(q => q.text);
+            const autismPool = allQuestions.filter(q => q.ageGroup === ageGroupVal && q.condition === "autism").map(q => q.text);
+
+            if (adhdPool.length < 15 || autismPool.length < 15) {
+                alert("Not enough questions for this age group.");
+                return;
+            }
+
+            const selectedAdhd = shuffle(adhdPool).slice(0, 15);
+            const selectedAutism = shuffle(autismPool).slice(0, 15);
+
+            currentQuestions = shuffle([...selectedAdhd, ...selectedAutism]);
+            answers = [];
+            questionIndex = 0;
+            showQuestion();
+        }
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        function showQuestion() {
+            if (questionIndex >= currentQuestions.length) {
+                calculateResults();
+                return;
+            }
+            document.getElementById("question-text").innerText = currentQuestions[questionIndex];
+            const progress = Math.round(((questionIndex) / Math.max(currentQuestions.length, 1)) * 100);
+            document.getElementById("progress").style.width = `${progress}%`;
+        }
+
+        function answer(score) {
+            const currentQ = currentQuestions[questionIndex];
+            const isAdhd = allQuestions.some(q => q.text === currentQ && q.condition === "adhd");
+            answers.push({ q: currentQ, score: score, type: isAdhd ? 'adhd' : 'autism' });
+
+            if (score === 1) sometimesCount++;
+
+            questionIndex++;
+
+            if (score === 1) { 
+                const poolType = answers[answers.length-1].type;
+                const usedTexts = new Set(currentQuestions.concat(answers.map(a => a.q)));
+                const pool = allQuestions
+                    .filter(q => q.ageGroup === ageGroupVal && q.condition === poolType)
+                    .map(q => q.text)
+                    .filter(text => !usedTexts.has(text));
+
+                if (pool.length > 0) {
+                    const replacement = pool[Math.floor(Math.random() * pool.length)];
+                    currentQuestions[questionIndex - 1] = replacement;
+                    questionIndex--;
+                }
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("results-screen").classList.remove("hidden");
+
+            let adhdTotal = 0, autismTotal = 0, adhdCount = 0, autismCount = 0;
+            answers.forEach(a => {
+                if (a.type === 'adhd') { adhdTotal += a.score; adhdCount++; }
+                else { autismTotal += a.score; autismCount++; }
+            });
+
+            const adhdScore = adhdCount ? Math.min(10, Math.max(1, Math.round((adhdTotal / (adhdCount * 2)) * 10))) : 1;
+            const autismScore = autismCount ? Math.min(10, Math.max(1, Math.round((autismTotal / (autismCount * 2)) * 10))) : 1;
+
+            document.getElementById("result-name").innerText = nameVal;
+            document.getElementById("adhd-score").innerText = adhdScore;
+            document.getElementById("autism-score").innerText = autismScore;
+
+            const warningEl = document.getElementById("warning-text");
+            if (sometimesCount >= MAX_SOMETIMES) {
+                warningEl.innerHTML = `⚠️ Too many "Sometimes" answers (${sometimesCount} / ${MAX_SOMETIMES}). Results may be less accurate.`;
+            } else {
+                warningEl.innerHTML = "";
+            }
+        }
+
+        function restart() {
+            location.reload();
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
+                switch (e.key.toLowerCase()) {
+                    case "arrowleft": case "n": answer(0); break;
+                    case "arrowright": case "y": answer(2); break;
+                    case "arrowup": case "arrowdown": case "s": case " ": 
+                        e.preventDefault(); answer(1); break;
+                }
+            } else if (!document.getElementById("start-screen").classList.contains("hidden")) {
+                if (e.key === "Enter" && !startBtn.disabled) startScreening();
+            }
+        });
+
+        window.addEventListener('load', () => {
+            updateStartButton();
+            createClouds();
+        });
     </script>
 </body>
 </html>
