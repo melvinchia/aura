@@ -116,13 +116,16 @@
             line-height: 1.5;
         }
 
-        /* Mobile Landscape */
+        /* Mobile Landscape - Reduced spacing */
         @media (orientation: landscape) and (max-height: 580px) {
-            .modal-content { padding: 16px 18px; }
-            h1 { font-size: 1.65rem; }
+            .modal-content { padding: 14px 16px; }
+            h1 { font-size: 1.6rem; margin-bottom: 6px; }
             .intro-text { display: none; }
-            label { margin: 8px 0 4px; font-size: 1.1rem; }
-            input[type="text"], select { padding: 11px 14px; font-size: 1.05rem; margin: 4px auto 10px; }
+            label { margin: 6px 0 4px; font-size: 1.05rem; }
+            input[type="text"], select { padding: 10px 12px; font-size: 1.0rem; margin: 4px auto 8px; }
+            button { padding: 13px 26px; font-size: 1.1rem; margin: 14px auto; }
+            .options { margin: 22px 0; gap: 10px; }
+            .legend { margin-top: 18px; padding: 10px; font-size: 0.85rem; }
         }
 
         @media (max-width: 600px) and (orientation: portrait) {
@@ -158,7 +161,7 @@
             <div id="quiz-screen" class="hidden">
                 <div id="progress-container"><div id="progress"></div></div>
                 <p id="greeting" style="font-size:1.2em;"></p>
-                <div id="question-text" style="font-size:1.35em; min-height:70px; margin:20px 0;"></div>
+                <div id="question-text" style="font-size:1.35em; min-height:65px; margin:15px 0;"></div>
                 
                 <div class="options">
                     <button id="no-btn" onclick="answer(0)">No</button>
@@ -235,7 +238,7 @@
         }
 
         document.addEventListener("keydown", (e) => {
-            if (isMobile()) return; // Disable keyboard shortcuts on mobile
+            if (isMobile()) return;
 
             if (!document.getElementById("quiz-screen").classList.contains("hidden")) {
                 switch (e.key.toLowerCase()) {
